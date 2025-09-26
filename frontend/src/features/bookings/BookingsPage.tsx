@@ -1,9 +1,8 @@
 import React from 'react';
+import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../../shared/api/client';
 import { CenteredSpinner } from '../../shared/components/CenteredSpinner';
-
-const organizerId = 1;
 
 type Booking = {
   id: number;
@@ -14,11 +13,12 @@ type Booking = {
   currency: string;
 };
 
-export const BookingsPage: React.FC = () => {
+export const BookingsList: React.FC<{ eventId: number }> = ({ eventId }) => {
   const { data, isLoading } = useQuery({
-    queryKey: ['bookings', organizerId],
+    queryKey: ['bookings', eventId],
+    enabled: Number.isFinite(eventId),
     queryFn: async () => {
-      const response = await apiClient.get<Booking[]>(`/api/bookings/organizer/${organizerId}`);
+      const response = await apiClient.get<Booking[]>(`/api/bookings/event/${eventId}`);
       return response.data;
     }
   });
@@ -30,7 +30,10 @@ export const BookingsPage: React.FC = () => {
   return (
     <div style={{ display: 'grid', gap: '1rem' }}>
       {data?.map((booking) => (
-        <article key={booking.id} style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '1rem', boxShadow: '0 10px 30px rgba(15,23,42,0.05)' }}>
+        <article
+          key={booking.id}
+          style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '1rem', boxShadow: '0 10px 30px rgba(15,23,42,0.05)' }}
+        >
           <header style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
             <strong>Booking #{booking.id}</strong>
             <span style={{ textTransform: 'capitalize' }}>{booking.status.toLowerCase()}</span>
@@ -48,4 +51,15 @@ export const BookingsPage: React.FC = () => {
       {data?.length === 0 && <div>No bookings yet. Browse vendors to get started.</div>}
     </div>
   );
+};
+
+export const BookingsPage: React.FC = () => {
+  const { eventId } = useParams();
+  const id = Number(eventId);
+
+  if (!Number.isFinite(id)) {
+    return <div>Please open this page from an event to view its bookings.</div>;
+  }
+
+  return <BookingsList eventId={id} />;
 };

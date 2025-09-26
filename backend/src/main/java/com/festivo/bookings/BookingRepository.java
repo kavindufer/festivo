@@ -13,7 +13,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
   boolean existsConflictingBooking(
       @Param("vendorId") Long vendorId, @Param("start") OffsetDateTime start, @Param("end") OffsetDateTime end);
 
-  List<Booking> findByOrganizerId(Long organizerId);
+  List<Booking> findByEventId(Long eventId);
 
   List<Booking> findByVendorId(Long vendorId);
 }

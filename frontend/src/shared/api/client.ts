@@ -15,3 +15,32 @@ export const attachTokenInterceptor = (tokenSupplier: () => string | undefined) 
     return config;
   });
 };
+
+export type EventPayload = {
+  customerId: number;
+  name: string;
+  description?: string;
+  eventDate?: string;
+};
+
+export const eventsApi = {
+  async listForCustomer(customerId: number) {
+    const response = await apiClient.get('/api/events', { params: { customerId } });
+    return response.data;
+  },
+  async get(eventId: number) {
+    const response = await apiClient.get(`/api/events/${eventId}`);
+    return response.data;
+  },
+  async create(payload: EventPayload) {
+    const response = await apiClient.post('/api/events', payload);
+    return response.data;
+  },
+  async update(eventId: number, payload: EventPayload) {
+    const response = await apiClient.put(`/api/events/${eventId}`, payload);
+    return response.data;
+  },
+  async remove(eventId: number) {
+    await apiClient.delete(`/api/events/${eventId}`);
+  }
+};

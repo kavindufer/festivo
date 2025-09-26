@@ -1,23 +1,28 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
+import { useSearchParams } from 'react-router-dom';
 import { apiClient } from '../../shared/api/client';
 import { CenteredSpinner } from '../../shared/components/CenteredSpinner';
 
-const organizerId = 1; // Demo seed user
+const defaultEventId = 1; // Demo seed event
 
 export const DashboardPage: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const eventIdParam = searchParams.get('eventId');
+  const eventId = Number(eventIdParam ?? defaultEventId);
+
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ['dashboard', organizerId],
+    queryKey: ['dashboard', eventId],
     queryFn: async () => {
-      const response = await apiClient.get('/api/dashboard', { params: { organizerId } });
+      const response = await apiClient.get('/api/dashboard', { params: { eventId } });
       return response.data as { upcoming: Array<any>; counts: { totalBookings: number; payments: number } };
     },
     retry: false
   });
 
   if (isLoading) {
-    return <CenteredSpinner label="Fetching planner dashboard" />;
+    return <CenteredSpinner label="Fetching event dashboard" />;
   }
 
   if (isError) {
@@ -88,7 +93,7 @@ const MetricCard: React.FC<{ title: string; value: number }> = ({ title, value }
 const deriveErrorMessage = (error: unknown) => {
   if (isAxiosError(error)) {
     if (error.response?.status === 403) {
-      return 'You do not have permission to view this dashboard. Try signing in with an organizer account.';
+      return 'You do not have permission to view this dashboard. Try signing in with a customer account.';
     }
 
     const responseMessage =

@@ -15,36 +15,23 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 @Transactional
 public class ChatService {
-  private final ChatRepository chatRepository;
   private final MessageRepository messageRepository;
   private final BookingService bookingService;
   private final UserRepository userRepository;
 
-  public Chat ensureChat(Long bookingId) {
-    return chatRepository
-        .findByBookingId(bookingId)
-        .orElseGet(
-            () -> {
-              Booking booking = bookingService.get(bookingId);
-              Chat chat = new Chat();
-              chat.setBooking(booking);
-              return chatRepository.save(chat);
-            });
-  }
-
   public List<Message> getMessages(Long bookingId) {
-    Chat chat = ensureChat(bookingId);
-    return messageRepository.findByChatIdOrderByCreatedAtAsc(chat.getId());
+    bookingService.get(bookingId);
+    return messageRepository.findByBookingIdOrderByCreatedAtAsc(bookingId);
   }
 
   public Message sendMessage(Long bookingId, Long senderId, String content) {
-    Chat chat = ensureChat(bookingId);
+    Booking booking = bookingService.get(bookingId);
     User sender =
         userRepository
             .findById(senderId)
             .orElseThrow(() -> new ResourceNotFoundException("Sender not found"));
     Message message = new Message();
-    message.setChat(chat);
+    message.setBooking(booking);
     message.setSender(sender);
     message.setContent(content);
     return messageRepository.save(message);

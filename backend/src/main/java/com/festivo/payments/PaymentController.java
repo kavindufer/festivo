@@ -25,7 +25,7 @@ public class PaymentController {
   private final BookingService bookingService;
 
   @GetMapping("/booking/{bookingId}")
-  @PreAuthorize("hasAnyAuthority('" + Roles.ORGANIZER + "','" + Roles.ADMIN + "')")
+  @PreAuthorize("hasAnyAuthority('" + Roles.CUSTOMER + "','" + Roles.ADMIN + "')")
   public Map<String, Object> session(@PathVariable Long bookingId) {
     var booking = bookingService.get(bookingId);
     var payment = paymentService.ensurePaymentDraft(booking);

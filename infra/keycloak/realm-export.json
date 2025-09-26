@@ -7,7 +7,7 @@
     "realm": [
       { "name": "ADMIN", "description": "Festivo platform administrators" },
       { "name": "VENDOR", "description": "Vendors on Festivo" },
-      { "name": "ORGANIZER", "description": "Event organizers" }
+      { "name": "CUSTOMER", "description": "Event customers" }
     ]
   },
   "clients": [
@@ -45,11 +45,11 @@
       "realmRoles": ["VENDOR"]
     },
     {
-      "username": "organizer@festivo.test",
+      "username": "customer@festivo.test",
       "enabled": true,
-      "email": "organizer@festivo.test",
-      "credentials": [{ "type": "password", "value": "OrganizerPass123!", "temporary": false }],
-      "realmRoles": ["ORGANIZER"]
+      "email": "customer@festivo.test",
+      "credentials": [{ "type": "password", "value": "CustomerPass123!", "temporary": false }],
+      "realmRoles": ["CUSTOMER"]
     }
   ]
 }

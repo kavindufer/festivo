@@ -15,14 +15,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/dashboard")
-@PreAuthorize("hasAnyAuthority('" + Roles.ORGANIZER + "','" + Roles.ADMIN + "')")
+@PreAuthorize("hasAnyAuthority('" + Roles.CUSTOMER + "','" + Roles.ADMIN + "')")
 public class PlannerDashboardController {
   private final BookingService bookingService;
   private final PaymentRepository paymentRepository;
 
   @GetMapping
-  public Map<String, Object> summary(@RequestParam Long organizerId) {
-    var bookings = bookingService.forOrganizer(organizerId);
+  public Map<String, Object> summary(@RequestParam Long eventId) {
+    var bookings = bookingService.forEvent(eventId);
     var upcoming =
         bookings.stream()
             .filter(b -> b.getStatus() != com.festivo.bookings.BookingStatus.CANCELLED)

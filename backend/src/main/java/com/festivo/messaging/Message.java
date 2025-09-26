@@ -1,5 +1,6 @@
 package com.festivo.messaging;
 
+import com.festivo.bookings.Booking;
 import com.festivo.common.model.AuditableEntity;
 import com.festivo.users.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -19,9 +20,9 @@ import lombok.Setter;
 @Table(name = "messages")
 public class Message extends AuditableEntity {
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "chat_id")
+  @JoinColumn(name = "booking_id")
   @JsonIgnore
-  private Chat chat;
+  private Booking booking;
 
   @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "sender_id")

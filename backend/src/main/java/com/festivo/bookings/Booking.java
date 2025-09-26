@@ -1,7 +1,7 @@
 package com.festivo.bookings;
 
 import com.festivo.common.model.AuditableEntity;
-import com.festivo.users.User;
+import com.festivo.events.Event;
 import com.festivo.vendors.ServiceOffering;
 import com.festivo.vendors.Vendor;
 import jakarta.persistence.Column;
@@ -36,9 +36,9 @@ public class Booking extends AuditableEntity {
   @JoinColumn(name = "service_id")
   private ServiceOffering service;
 
-  @ManyToOne(fetch = FetchType.EAGER)
-  @JoinColumn(name = "organizer_id")
-  private User organizer;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "event_id")
+  private Event event;
 
   @Column(nullable = false)
   private OffsetDateTime startTime;

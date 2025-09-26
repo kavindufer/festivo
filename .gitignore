@@ -1,0 +1,28 @@
+# Node
+node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Java
+backend/target/
+**/.classpath
+**/.project
+**/.settings/
+
+# Env
+.env
+*.env
+infra/.env
+infra/.env.local
+frontend/.env.local
+
+# IDE
+.vscode/
+.idea/
+.DS_Store
+
+# Logs
+*.log
+
+# Docker
+**/tmp/

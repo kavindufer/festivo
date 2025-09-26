@@ -1,0 +1,55 @@
+{
+  "id": "festivo",
+  "realm": "festivo",
+  "enabled": true,
+  "displayName": "Festivo Realm",
+  "roles": {
+    "realm": [
+      { "name": "ADMIN", "description": "Festivo platform administrators" },
+      { "name": "VENDOR", "description": "Vendors on Festivo" },
+      { "name": "ORGANIZER", "description": "Event organizers" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "festivo-web",
+      "publicClient": true,
+      "protocol": "openid-connect",
+      "redirectUris": [
+        "http://localhost/*",
+        "http://localhost:5173/*"
+      ],
+      "webOrigins": ["*"]
+    },
+    {
+      "clientId": "festivo-api",
+      "protocol": "openid-connect",
+      "bearerOnly": true,
+      "publicClient": false,
+      "serviceAccountsEnabled": false
+    }
+  ],
+  "users": [
+    {
+      "username": "admin@festivo.test",
+      "enabled": true,
+      "email": "admin@festivo.test",
+      "credentials": [{ "type": "password", "value": "AdminPass123!", "temporary": false }],
+      "realmRoles": ["ADMIN"]
+    },
+    {
+      "username": "vendor@festivo.test",
+      "enabled": true,
+      "email": "vendor@festivo.test",
+      "credentials": [{ "type": "password", "value": "VendorPass123!", "temporary": false }],
+      "realmRoles": ["VENDOR"]
+    },
+    {
+      "username": "organizer@festivo.test",
+      "enabled": true,
+      "email": "organizer@festivo.test",
+      "credentials": [{ "type": "password", "value": "OrganizerPass123!", "temporary": false }],
+      "realmRoles": ["ORGANIZER"]
+    }
+  ]
+}

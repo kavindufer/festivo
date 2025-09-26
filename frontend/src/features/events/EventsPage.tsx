@@ -5,16 +5,14 @@ import { Event } from '../../shared/types/events';
 import { EventPayload, eventsApi } from '../../shared/api/client';
 import { CenteredSpinner } from '../../shared/components/CenteredSpinner';
 
-const demoCustomerId = 1;
-
 export const EventsPage: React.FC = () => {
   const queryClient = useQueryClient();
-  const [form, setForm] = useState<EventPayload>({ customerId: demoCustomerId, name: '', description: '' });
+  const [form, setForm] = useState<EventPayload>({ name: '', description: '' });
 
   const { data, isLoading } = useQuery({
-    queryKey: ['events', demoCustomerId],
+    queryKey: ['events', 'current-user'],
     queryFn: async () => {
-      const response = await eventsApi.listForCustomer(demoCustomerId);
+      const response = await eventsApi.listForCurrentUser();
       return response as Event[];
     }
   });
@@ -22,8 +20,8 @@ export const EventsPage: React.FC = () => {
   const { mutateAsync, isPending } = useMutation({
     mutationFn: (payload: EventPayload) => eventsApi.create(payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['events', demoCustomerId] });
-      setForm({ customerId: demoCustomerId, name: '', description: '' });
+      queryClient.invalidateQueries({ queryKey: ['events', 'current-user'] });
+      setForm({ name: '', description: '' });
     }
   });
 

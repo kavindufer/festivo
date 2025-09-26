@@ -18,7 +18,7 @@
   <description>Festivo event planning platform backend</description>
 
   <properties>
-    <java.version>21</java.version>
+    <java.version>17</java.version>
     <mapstruct.version>1.5.5.Final</mapstruct.version>
   </properties>
 

@@ -17,7 +17,6 @@ export const attachTokenInterceptor = (tokenSupplier: () => string | undefined) 
 };
 
 export type EventPayload = {
-  customerId: number;
   name: string;
   description?: string;
   eventDate?: string;
@@ -26,6 +25,10 @@ export type EventPayload = {
 export const eventsApi = {
   async listForCustomer(customerId: number) {
     const response = await apiClient.get('/api/events', { params: { customerId } });
+    return response.data;
+  },
+  async listForCurrentUser() {
+    const response = await apiClient.get('/api/events/my');
     return response.data;
   },
   async get(eventId: number) {

@@ -1,9 +1,9 @@
 package com.festivo.messaging;
 
+import com.festivo.auth.CurrentUser;
 import com.festivo.common.security.Roles;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +30,7 @@ public class ChatController {
   @PostMapping("/booking/{bookingId}")
   @PreAuthorize("hasAnyAuthority('" + Roles.CUSTOMER + "','" + Roles.VENDOR + "','" + Roles.ADMIN + "')")
   public Message send(@PathVariable Long bookingId, @Valid @RequestBody MessageRequest request) {
-    return chatService.sendMessage(bookingId, request.senderId(), request.content());
+    return chatService.sendMessage(bookingId, CurrentUser.subject(), request.content());
   }
 
   @PostMapping("/messages/{messageId}/read")
@@ -40,5 +40,5 @@ public class ChatController {
     return Map.of("readAt", updated.getReadAt());
   }
 
-  public record MessageRequest(@NotNull Long senderId, @NotBlank String content) {}
+  public record MessageRequest(@NotBlank String content) {}
 }

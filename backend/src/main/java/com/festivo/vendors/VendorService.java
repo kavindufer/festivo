@@ -4,6 +4,7 @@ import com.festivo.bookings.BookingRepository;
 import com.festivo.common.exception.ResourceNotFoundException;
 import jakarta.transaction.Transactional;
 import java.time.OffsetDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -80,12 +81,14 @@ public class VendorService {
             .filter(b ->
                 (b.getStartTime().isBefore(end) && b.getEndTime().isAfter(start)))
             .map(
-                b ->
-                    Map.of(
-                        "bookingId", b.getId(),
-                        "start", b.getStartTime().toString(),
-                        "end", b.getEndTime().toString(),
-                        "status", b.getStatus().name()))
+                b -> {
+                  Map<String, Object> event = new HashMap<>();
+                  event.put("bookingId", b.getId());
+                  event.put("start", b.getStartTime().toString());
+                  event.put("end", b.getEndTime().toString());
+                  event.put("status", b.getStatus().name());
+                  return event;
+                })
             .collect(Collectors.toList());
     return Map.of("events", bookings);
   }

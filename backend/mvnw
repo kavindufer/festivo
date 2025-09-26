@@ -1,0 +1,18 @@
+#!/bin/sh
+set -e
+
+MVNW_DIR="$(dirname "$0")"
+WRAPPER_JAR="$MVNW_DIR/.mvn/wrapper/maven-wrapper.jar"
+WRAPPER_PROPERTIES="$MVNW_DIR/.mvn/wrapper/maven-wrapper.properties"
+
+if [ ! -f "$WRAPPER_JAR" ]; then
+  echo "Downloading Maven Wrapper..." >&2
+  mkdir -p "$MVNW_DIR/.mvn/wrapper"
+  if ! curl -fsSL -o "$WRAPPER_JAR" "https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.2.0/maven-wrapper-3.2.0.jar"; then
+    echo "Wrapper download failed; falling back to system Maven" >&2
+    exec mvn "$@"
+  fi
+fi
+
+exec "${JAVA_HOME:+$JAVA_HOME/bin/}java" -Dmaven.multiModuleProjectDirectory="$MVNW_DIR" \
+  -cp "$WRAPPER_JAR" org.apache.maven.wrapper.MavenWrapperMain "$@"

@@ -1,0 +1,25 @@
+{
+  "name": "Festivo Dev",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/node:1": { "version": "20" },
+    "ghcr.io/devcontainers/features/java:1": { "version": "21" }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "mhutchie.git-graph",
+        "vscjava.vscode-spring-initializr",
+        "vscjava.vscode-spring-boot-dashboard",
+        "vscjava.vscode-java-pack",
+        "ms-azuretools.vscode-docker",
+        "editorconfig.editorconfig"
+      ]
+    }
+  },
+  "postCreateCommand": "npm --version && java -version && mvn -version",
+  "remoteUser": "vscode"
+}

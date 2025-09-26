@@ -1,6 +1,7 @@
 package com.festivo.admin;
 
 import com.festivo.admin.dto.AdminUserSummary;
+import com.festivo.admin.dto.CreateUserRequest;
 import com.festivo.admin.dto.PagedResponse;
 import com.festivo.admin.dto.UpdateUserRequest;
 import com.festivo.common.security.Roles;
@@ -10,11 +11,13 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import jakarta.validation.Valid;
 
 @RestController
 @RequiredArgsConstructor
@@ -32,6 +35,11 @@ public class AdminUserController {
       @RequestParam(defaultValue = "20") int size,
       @RequestParam(required = false) String sort) {
     return userService.search(search, role, active, Math.max(page, 0), Math.max(1, Math.min(size, 100)), sort);
+  }
+
+  @PostMapping
+  public AdminUserSummary create(@Valid @RequestBody CreateUserRequest request) {
+    return userService.create(request);
   }
 
   @GetMapping("/{id}")

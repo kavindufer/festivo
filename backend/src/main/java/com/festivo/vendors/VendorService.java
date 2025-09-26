@@ -103,6 +103,10 @@ public class VendorService {
     return reviewRepository.calculateAverageRating(vendorId);
   }
 
+  public List<Review> reviews(Long vendorId) {
+    return reviewRepository.findByVendorId(vendorId);
+  }
+
   public Map<String, Boolean> availability(Long vendorId, OffsetDateTime start, OffsetDateTime end) {
     boolean conflict = bookingRepository.existsConflictingBooking(vendorId, start, end);
     return Map.of("available", !conflict);

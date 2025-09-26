@@ -55,6 +55,14 @@ type PagedResponse<T> = {
   size: number;
 };
 
+type CreateUserRequest = {
+  displayName: string;
+  email: string;
+  password: string;
+  role: string;
+  active: boolean;
+};
+
 type UpdateUserRequest = {
   displayName: string;
   email: string;
@@ -78,8 +86,16 @@ export const AdminUsersPage: React.FC = () => {
   const queryClient = useQueryClient();
   const toast = useToast();
   const editor = useDisclosure();
+  const creator = useDisclosure();
   const [selectedUser, setSelectedUser] = useState<UserSummary | null>(null);
   const [form, setForm] = useState<UpdateUserRequest | null>(null);
+  const [createForm, setCreateForm] = useState<CreateUserRequest>({
+    displayName: '',
+    email: '',
+    password: '',
+    role: 'ROLE_CUSTOMER',
+    active: true
+  });
 
   const usersQuery = useQuery({
     queryKey: ['admin', 'users', { search, role, active, page }],
@@ -95,6 +111,28 @@ export const AdminUsersPage: React.FC = () => {
         }
       });
       return response.data;
+    }
+  });
+
+  const createMutation = useMutation({
+    mutationFn: async (payload: CreateUserRequest) => {
+      await apiClient.post('/api/admin/users', payload);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+      toast({ title: 'User created successfully', status: 'success', duration: 3000, isClosable: true });
+      creator.onClose();
+      setCreateForm({
+        displayName: '',
+        email: '',
+        password: '',
+        role: 'ROLE_CUSTOMER',
+        active: true
+      });
+    },
+    onError: (error) => {
+      const message = error instanceof Error ? error.message : 'Unable to create user.';
+      toast({ title: 'Creation failed', description: message, status: 'error', duration: 4000, isClosable: true });
     }
   });
 
@@ -130,6 +168,17 @@ export const AdminUsersPage: React.FC = () => {
     }
   });
 
+  const handleCreate = () => {
+    setCreateForm({
+      displayName: '',
+      email: '',
+      password: '',
+      role: 'ROLE_CUSTOMER',
+      active: true
+    });
+    creator.onOpen();
+  };
+
   const handleEdit = (user: UserSummary) => {
     setSelectedUser(user);
     setForm({
@@ -155,9 +204,18 @@ export const AdminUsersPage: React.FC = () => {
 
   return (
     <Box bg="white" borderRadius="xl" shadow="sm" p={6}>
-      <Heading size="lg" mb={6}>
-        User management
-      </Heading>
+      <HStack justify="space-between" mb={6}>
+        <Heading size="lg">
+          User management
+        </Heading>
+        <Button 
+          colorScheme="brand" 
+          onClick={handleCreate}
+          leftIcon={<span>+</span>}
+        >
+          Create User
+        </Button>
+      </HStack>
 
       <SimpleGrid columns={{ base: 1, md: 4 }} spacing={4} mb={6}>
         <FormControl>
@@ -328,6 +386,92 @@ export const AdminUsersPage: React.FC = () => {
                 isLoading={updateMutation.isPending}
               >
                 Save changes
+              </Button>
+            </HStack>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
+
+      {/* Create User Modal */}
+      <Drawer isOpen={creator.isOpen} placement="right" onClose={creator.onClose} size="sm">
+        <DrawerOverlay />
+        <DrawerContent>
+          <DrawerHeader borderBottomWidth="1px">Create new user</DrawerHeader>
+          <DrawerBody>
+            <Stack spacing={4}>
+              <FormControl isRequired>
+                <FormLabel>Display Name</FormLabel>
+                <Input
+                  value={createForm.displayName}
+                  onChange={(event) => setCreateForm({ ...createForm, displayName: event.target.value })}
+                  placeholder="Enter user's full name"
+                />
+              </FormControl>
+              <FormControl isRequired>
+                <FormLabel>Email</FormLabel>
+                <Input
+                  type="email"
+                  value={createForm.email}
+                  onChange={(event) => setCreateForm({ ...createForm, email: event.target.value })}
+                  placeholder="Enter email address"
+                />
+              </FormControl>
+              <FormControl isRequired>
+                <FormLabel>Password</FormLabel>
+                <Input
+                  type="password"
+                  value={createForm.password}
+                  onChange={(event) => setCreateForm({ ...createForm, password: event.target.value })}
+                  placeholder="Enter secure password"
+                />
+              </FormControl>
+              <FormControl isRequired>
+                <FormLabel>Role</FormLabel>
+                <Select 
+                  value={createForm.role} 
+                  onChange={(event) => setCreateForm({ ...createForm, role: event.target.value })}
+                >
+                  {roleOptions
+                    .filter((option) => option.value)
+                    .map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                </Select>
+              </FormControl>
+              <FormControl display="flex" alignItems="center" justifyContent="space-between">
+                <FormLabel mb="0">Active</FormLabel>
+                <Switch 
+                  isChecked={createForm.active} 
+                  onChange={(event) => setCreateForm({ ...createForm, active: event.target.checked })} 
+                />
+              </FormControl>
+            </Stack>
+          </DrawerBody>
+          <DrawerFooter borderTopWidth="1px">
+            <HStack>
+              <Button variant="ghost" onClick={creator.onClose}>
+                Cancel
+              </Button>
+              <Button
+                colorScheme="brand"
+                onClick={() => {
+                  if (!createForm.displayName || !createForm.email || !createForm.password) {
+                    toast({ 
+                      title: 'Validation Error', 
+                      description: 'Please fill in all required fields', 
+                      status: 'warning', 
+                      duration: 3000, 
+                      isClosable: true 
+                    });
+                    return;
+                  }
+                  createMutation.mutate(createForm);
+                }}
+                isLoading={createMutation.isPending}
+              >
+                Create User
               </Button>
             </HStack>
           </DrawerFooter>

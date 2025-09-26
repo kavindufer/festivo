@@ -70,6 +70,11 @@ public class BookingService {
     booking.setTimezone(timezone);
     Booking saved = bookingRepository.save(booking);
     paymentService.ensurePaymentDraft(saved);
+    
+    // Send notification to vendor (simple logging for now)
+    System.out.println("NOTIFICATION: New booking created for vendor " + vendor.getName() + 
+                      " (ID: " + vendor.getId() + ") - Booking ID: " + saved.getId());
+    
     return saved;
   }
 

@@ -36,8 +36,18 @@ public class VendorController {
   }
 
   @GetMapping("/{id}")
-  public Vendor get(@PathVariable Long id) {
-    return vendorService.getById(id);
+  public Map<String, Object> get(@PathVariable Long id) {
+    Vendor vendor = vendorService.getById(id);
+    List<ServiceOffering> services = vendorService.offerings(id);
+    List<Review> reviews = vendorService.reviews(id);
+    Double rating = vendorService.rating(id);
+    
+    return Map.of(
+        "vendor", vendor,
+        "services", services,
+        "reviews", reviews,
+        "rating", rating
+    );
   }
 
   @PostMapping

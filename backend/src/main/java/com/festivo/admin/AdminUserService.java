@@ -1,6 +1,7 @@
 package com.festivo.admin;
 
 import com.festivo.admin.dto.AdminUserSummary;
+import com.festivo.admin.dto.CreateUserRequest;
 import com.festivo.admin.dto.PagedResponse;
 import com.festivo.admin.dto.UpdateUserRequest;
 import com.festivo.common.exception.ResourceNotFoundException;
@@ -16,6 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +26,30 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class AdminUserService {
   private final UserRepository userRepository;
+  private final PasswordEncoder passwordEncoder;
+
+  public AdminUserSummary create(CreateUserRequest request) {
+    // Check if email already exists
+    if (userRepository.existsByEmail(request.email())) {
+      throw new IllegalArgumentException("User with this email already exists");
+    }
+
+    User user = new User();
+    user.setDisplayName(request.displayName());
+    user.setEmail(request.email());
+    // Note: In a real application, you'd handle password hashing differently
+    // For now, we'll store it as-is since the User entity doesn't have a password field
+    // In a production system, you'd need to add a password field to the User entity
+    user.setRole(request.role());
+    user.setActive(request.active() != null ? request.active() : true);
+    user.setMfaEnabled(false);
+    
+    // Generate a unique external ID (in real app, this would come from your auth provider)
+    user.setExternalId("user_" + System.currentTimeMillis());
+
+    User savedUser = userRepository.save(user);
+    return toSummary(savedUser);
+  }
 
   @Transactional(readOnly = true)
   public PagedResponse<AdminUserSummary> search(

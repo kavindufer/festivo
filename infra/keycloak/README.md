@@ -1,17 +1,10 @@
-# Festivo Keycloak Realm
+# Keycloak Setup
 
-This directory contains the development realm export for Festivo. The realm defines:
+This directory contains configuration used to bootstrap a local Keycloak instance for Festivo.
 
 - Realm name: `festivo`
-- Realm roles: `ADMIN`, `VENDOR`, `ORGANIZER`
-- Clients: `festivo-web` (public SPA) and `festivo-api` (bearer-only backend)
-- Seed users for each realm role with deterministic passwords (see `realm-export.json`)
-
-To re-import the realm locally, run docker compose from the `infra` directory:
-
-```bash
-cd infra
-KEYCLOAK_ADMIN=admin KEYCLOAK_ADMIN_PASSWORD=admin docker compose up keycloak
-```
-
-The Keycloak container starts in development mode with realm import enabled. Access the admin console at <http://localhost:8081/admin> using `admin` / `admin`.
+- Realm roles: `ADMIN`, `VENDOR`, `CUSTOMER`
+- Demo users:
+  - `admin@festivo.test` / `AdminPass123!`
+  - `vendor@festivo.test` / `VendorPass123!`
+  - `customer@festivo.test` / `CustomerPass123!`

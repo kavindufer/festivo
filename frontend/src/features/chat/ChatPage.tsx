@@ -4,7 +4,7 @@ import { apiClient } from '../../shared/api/client';
 import { CenteredSpinner } from '../../shared/components/CenteredSpinner';
 
 const bookingId = 1;
-const organizerId = 1;
+const customerId = 1;
 
 type Message = {
   id: number;
@@ -26,7 +26,7 @@ export const ChatPage: React.FC = () => {
 
   const { mutate, isPending } = useMutation({
     mutationFn: async () => {
-      await apiClient.post(`/api/chat/booking/${bookingId}`, { senderId: organizerId, content: message });
+      await apiClient.post(`/api/chat/booking/${bookingId}`, { senderId: customerId, content: message });
     },
     onSuccess: () => {
       setMessage('');

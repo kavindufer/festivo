@@ -30,4 +30,7 @@ public class User extends AuditableEntity {
   private UserRole role;
 
   @Column private boolean mfaEnabled;
+
+  @Column(nullable = false)
+  private boolean active = true;
 }

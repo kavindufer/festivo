@@ -20,6 +20,7 @@ public class VendorService {
   private final ServiceCategoryRepository categoryRepository;
   private final ReviewRepository reviewRepository;
   private final BookingRepository bookingRepository;
+  private final VendorScheduleBlockRepository scheduleRepository;
 
   public List<Vendor> search(Long categoryId, Double minRating) {
     return vendorRepository.search(categoryId, minRating);
@@ -66,6 +67,38 @@ public class VendorService {
     return offeringRepository.save(offering);
   }
 
+  public ServiceOffering updateOffering(Long vendorId, Long offeringId, ServiceOffering payload) {
+    Vendor vendor = getById(vendorId);
+    ServiceOffering existing =
+        offeringRepository
+            .findById(offeringId)
+            .filter(offering -> offering.getVendor().getId().equals(vendor.getId()))
+            .orElseThrow(() -> new ResourceNotFoundException("Service offering not found"));
+
+    existing.setTitle(payload.getTitle());
+    existing.setDescription(payload.getDescription());
+    existing.setPrice(payload.getPrice());
+    existing.setCurrency(payload.getCurrency());
+    if (payload.getCategory() != null && payload.getCategory().getId() != null) {
+      var category =
+          categoryRepository
+              .findById(payload.getCategory().getId())
+              .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+      existing.setCategory(category);
+    }
+    return existing;
+  }
+
+  public void deleteOffering(Long vendorId, Long offeringId) {
+    Vendor vendor = getById(vendorId);
+    ServiceOffering existing =
+        offeringRepository
+            .findById(offeringId)
+            .filter(offering -> offering.getVendor().getId().equals(vendor.getId()))
+            .orElseThrow(() -> new ResourceNotFoundException("Service offering not found"));
+    offeringRepository.delete(existing);
+  }
+
   public Double rating(Long vendorId) {
     return reviewRepository.calculateAverageRating(vendorId);
   }
@@ -97,5 +130,28 @@ public class VendorService {
     Vendor vendor = getById(vendorId);
     vendor.setVerified(true);
     return vendor;
+  }
+
+  public List<VendorScheduleBlock> schedule(Long vendorId) {
+    getById(vendorId);
+    return scheduleRepository.findByVendorIdOrderByStartDateAsc(vendorId);
+  }
+
+  public List<VendorScheduleBlock> updateSchedule(Long vendorId, List<VendorScheduleBlock> blocks) {
+    Vendor vendor = getById(vendorId);
+    scheduleRepository.deleteByVendorId(vendor.getId());
+    List<VendorScheduleBlock> prepared =
+        blocks.stream()
+            .map(
+                block -> {
+                  VendorScheduleBlock entity = new VendorScheduleBlock();
+                  entity.setVendor(vendor);
+                  entity.setStartDate(block.getStartDate());
+                  entity.setEndDate(block.getEndDate());
+                  entity.setReason(block.getReason());
+                  return entity;
+                })
+            .toList();
+    return scheduleRepository.saveAll(prepared);
   }
 }

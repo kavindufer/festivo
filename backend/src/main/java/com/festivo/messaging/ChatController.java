@@ -22,17 +22,19 @@ public class ChatController {
   private final ChatService chatService;
 
   @GetMapping("/booking/{bookingId}")
+  @PreAuthorize("hasAnyAuthority('" + Roles.CUSTOMER + "','" + Roles.VENDOR + "','" + Roles.ADMIN + "')")
   public List<Message> messages(@PathVariable Long bookingId) {
     return chatService.getMessages(bookingId);
   }
 
   @PostMapping("/booking/{bookingId}")
-  @PreAuthorize("hasAnyAuthority('" + Roles.ORGANIZER + "','" + Roles.VENDOR + "','" + Roles.ADMIN + "')")
+  @PreAuthorize("hasAnyAuthority('" + Roles.CUSTOMER + "','" + Roles.VENDOR + "','" + Roles.ADMIN + "')")
   public Message send(@PathVariable Long bookingId, @Valid @RequestBody MessageRequest request) {
     return chatService.sendMessage(bookingId, request.senderId(), request.content());
   }
 
   @PostMapping("/messages/{messageId}/read")
+  @PreAuthorize("hasAnyAuthority('" + Roles.CUSTOMER + "','" + Roles.VENDOR + "','" + Roles.ADMIN + "')")
   public Map<String, Object> read(@PathVariable Long messageId) {
     var updated = chatService.markRead(messageId);
     return Map.of("readAt", updated.getReadAt());

@@ -2,9 +2,9 @@ package com.festivo.bookings;
 
 import com.festivo.common.exception.ConflictException;
 import com.festivo.common.exception.ResourceNotFoundException;
+import com.festivo.events.Event;
+import com.festivo.events.EventRepository;
 import com.festivo.payments.PaymentService;
-import com.festivo.users.User;
-import com.festivo.users.UserRepository;
 import com.festivo.vendors.ServiceOffering;
 import com.festivo.vendors.ServiceOfferingRepository;
 import com.festivo.vendors.Vendor;
@@ -23,13 +23,13 @@ public class BookingService {
   private final BookingRepository bookingRepository;
   private final VendorRepository vendorRepository;
   private final ServiceOfferingRepository serviceOfferingRepository;
-  private final UserRepository userRepository;
+  private final EventRepository eventRepository;
   private final PaymentService paymentService;
 
   public Booking create(
       Long vendorId,
       Long serviceId,
-      Long organizerId,
+      Long eventId,
       OffsetDateTime start,
       OffsetDateTime end,
       BigDecimal total,
@@ -51,15 +51,15 @@ public class BookingService {
         serviceOfferingRepository
             .findById(serviceId)
             .orElseThrow(() -> new ResourceNotFoundException("Service not found"));
-    User organizer =
-        userRepository
-            .findById(organizerId)
-            .orElseThrow(() -> new ResourceNotFoundException("Organizer not found"));
+    Event event =
+        eventRepository
+            .findById(eventId)
+            .orElseThrow(() -> new ResourceNotFoundException("Event not found"));
 
     Booking booking = new Booking();
     booking.setVendor(vendor);
     booking.setService(offering);
-    booking.setOrganizer(organizer);
+    booking.setEvent(event);
     booking.setStartTime(start);
     booking.setEndTime(end);
     booking.setStatus(BookingStatus.PENDING);
@@ -91,8 +91,8 @@ public class BookingService {
         .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
   }
 
-  public List<Booking> forOrganizer(Long organizerId) {
-    return bookingRepository.findByOrganizerId(organizerId);
+  public List<Booking> forEvent(Long eventId) {
+    return bookingRepository.findByEventId(eventId);
   }
 
   public List<Booking> forVendor(Long vendorId) {

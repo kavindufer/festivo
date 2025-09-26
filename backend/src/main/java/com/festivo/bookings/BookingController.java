@@ -25,12 +25,12 @@ public class BookingController {
   private final BookingService bookingService;
 
   @PostMapping
-  @PreAuthorize("hasAuthority('" + Roles.ORGANIZER + "')")
+  @PreAuthorize("hasAuthority('" + Roles.CUSTOMER + "')")
   public Booking create(@Valid @RequestBody BookingRequest request) {
     return bookingService.create(
         request.vendorId(),
         request.serviceId(),
-        request.organizerId(),
+        request.eventId(),
         request.startTime(),
         request.endTime(),
         request.totalAmount(),
@@ -40,10 +40,10 @@ public class BookingController {
         request.timezone());
   }
 
-  @GetMapping("/organizer/{organizerId}")
-  @PreAuthorize("hasAnyAuthority('" + Roles.ORGANIZER + "','" + Roles.ADMIN + "')")
-  public List<Booking> organizer(@PathVariable Long organizerId) {
-    return bookingService.forOrganizer(organizerId);
+  @GetMapping("/event/{eventId}")
+  @PreAuthorize("hasAnyAuthority('" + Roles.CUSTOMER + "','" + Roles.ADMIN + "')")
+  public List<Booking> event(@PathVariable Long eventId) {
+    return bookingService.forEvent(eventId);
   }
 
   @GetMapping("/vendor/{vendorId}")
@@ -59,7 +59,7 @@ public class BookingController {
   }
 
   @PostMapping("/{id}/cancel")
-  @PreAuthorize("hasAnyAuthority('" + Roles.ORGANIZER + "','" + Roles.ADMIN + "')")
+  @PreAuthorize("hasAnyAuthority('" + Roles.CUSTOMER + "','" + Roles.ADMIN + "')")
   public Booking cancel(@PathVariable Long id) {
     return bookingService.cancel(id);
   }
@@ -76,7 +76,7 @@ public class BookingController {
   public record BookingRequest(
       @NotNull Long vendorId,
       @NotNull Long serviceId,
-      @NotNull Long organizerId,
+      @NotNull Long eventId,
       @NotNull @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime startTime,
       @NotNull @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime endTime,
       @NotNull BigDecimal totalAmount,

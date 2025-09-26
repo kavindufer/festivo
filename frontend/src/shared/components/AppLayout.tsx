@@ -78,10 +78,7 @@ export const AppLayout: React.FC = () => {
                 fontWeight="medium"
                 borderRadius="md"
                 _hover={{ textDecoration: 'none', bg: activeBg }}
-                style={({ isActive }) => ({
-                  backgroundColor: isActive ? 'rgba(255,255,255,0.2)' : undefined,
-                  color: '#fff'
-                })}
+                _activeLink={{ bg: activeBg, color: 'white' }}
               >
                 {item.label}
               </ChakraLink>

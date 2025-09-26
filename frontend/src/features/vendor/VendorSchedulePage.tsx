@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Badge,
@@ -42,9 +42,14 @@ export const VendorSchedulePage: React.FC = () => {
     queryFn: async () => {
       const response = await apiClient.get<ScheduleBlock[]>(`/api/vendors/${vendorId}/schedule`);
       return response.data;
-    },
-    onSuccess: (data) => setPendingBlocks(data)
+    }
   });
+
+  useEffect(() => {
+    if (scheduleQuery.data) {
+      setPendingBlocks(scheduleQuery.data);
+    }
+  }, [scheduleQuery.data]);
 
   const updateMutation = useMutation({
     mutationFn: async (blocks: ScheduleBlock[]) => apiClient.put(`/api/vendors/${vendorId}/schedule`, blocks),

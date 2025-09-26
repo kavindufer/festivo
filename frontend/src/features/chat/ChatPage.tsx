@@ -24,7 +24,7 @@ export const ChatPage: React.FC = () => {
     }
   });
 
-  const mutation = useMutation({
+  const { mutate, isPending } = useMutation({
     mutationFn: async () => {
       await apiClient.post(`/api/chat/booking/${bookingId}`, { senderId: organizerId, content: message });
     },
@@ -54,7 +54,7 @@ export const ChatPage: React.FC = () => {
         onSubmit={(event) => {
           event.preventDefault();
           if (!message.trim()) return;
-          mutation.mutate();
+          mutate();
         }}
         style={{ marginTop: '1rem', display: 'flex', gap: '1rem' }}
       >
@@ -66,7 +66,7 @@ export const ChatPage: React.FC = () => {
         />
         <button
           type="submit"
-          disabled={mutation.isLoading}
+          disabled={isPending}
           style={{ backgroundColor: '#2563eb', color: 'white', border: 'none', borderRadius: '0.75rem', padding: '0.75rem 1.5rem', cursor: 'pointer' }}
         >
           Send

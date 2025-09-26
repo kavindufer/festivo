@@ -15,10 +15,11 @@ services:
       - festivo-db-data:/var/lib/mysql
       - ../scripts/db/seed.sql:/docker-entrypoint-initdb.d/seed.sql:ro
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-pfestivo_root"]
+      test: ["CMD-SHELL", "set -e; mysqladmin --protocol=TCP ping -h 127.0.0.1 -uroot --password=\"$$MYSQL_ROOT_PASSWORD\" --silent"]
       interval: 10s
       timeout: 5s
-      retries: 10
+      retries: 12
+      start_period: 60s
 
   keycloak:
     image: quay.io/keycloak/keycloak:24.0

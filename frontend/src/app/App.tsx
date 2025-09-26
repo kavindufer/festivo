@@ -37,7 +37,7 @@ export const App: React.FC = () => {
           <Route path="/events/:eventId/bookings" element={<BookingsPage />} />
           <Route path="/vendors" element={<VendorSearchPage />} />
           <Route path="/vendors/:vendorId" element={<VendorDetailPage />} />
-          <Route path="/chat" element={<ChatPage />} />
+          <Route path="/chat/:bookingId" element={<ChatPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route element={<ProtectedRoute roles={['ROLE_ADMIN']} />}>
             <Route path="/admin/dashboard" element={<AdminDashboardPage />} />

@@ -17,7 +17,6 @@ export const attachTokenInterceptor = (tokenSupplier: () => string | undefined) 
 };
 
 export type EventPayload = {
-  customerId: number;
   name: string;
   description?: string;
   eventDate?: string;

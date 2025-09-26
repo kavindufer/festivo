@@ -4,17 +4,19 @@ import { Link } from 'react-router-dom';
 import { Event } from '../../shared/types/events';
 import { EventPayload, eventsApi } from '../../shared/api/client';
 import { CenteredSpinner } from '../../shared/components/CenteredSpinner';
-
-const demoCustomerId = 1;
+import { useAuth } from '../../shared/auth/AuthContext';
 
 export const EventsPage: React.FC = () => {
   const queryClient = useQueryClient();
-  const [form, setForm] = useState<EventPayload>({ customerId: demoCustomerId, name: '', description: '' });
+  const { state: { profile } } = useAuth();
+  const customerId = profile?.attributes?.customerId?.[0];
+  const [form, setForm] = useState<EventPayload>({ name: '', description: '' });
 
   const { data, isLoading } = useQuery({
-    queryKey: ['events', demoCustomerId],
+    queryKey: ['events', customerId],
+    enabled: !!customerId,
     queryFn: async () => {
-      const response = await eventsApi.listForCustomer(demoCustomerId);
+      const response = await eventsApi.listForCustomer(Number(customerId));
       return response as Event[];
     }
   });
@@ -22,10 +24,14 @@ export const EventsPage: React.FC = () => {
   const { mutateAsync, isPending } = useMutation({
     mutationFn: (payload: EventPayload) => eventsApi.create(payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['events', demoCustomerId] });
-      setForm({ customerId: demoCustomerId, name: '', description: '' });
+      queryClient.invalidateQueries({ queryKey: ['events', customerId] });
+      setForm({ name: '', description: '' });
     }
   });
+
+  if (!customerId) {
+    return <div>We couldn't load your events because your customer profile is unavailable.</div>;
+  }
 
   if (isLoading) {
     return <CenteredSpinner label="Loading your events" />;
@@ -39,6 +45,7 @@ export const EventsPage: React.FC = () => {
           onSubmit={async (event) => {
             event.preventDefault();
             if (!form.name.trim()) return;
+            if (!customerId) return;
             await mutateAsync(form);
           }}
           style={{ display: 'grid', gap: '1rem' }}
@@ -64,7 +71,7 @@ export const EventsPage: React.FC = () => {
           </label>
           <button
             type="submit"
-            disabled={isPending}
+            disabled={isPending || !customerId}
             style={{
               backgroundColor: '#2563eb',
               color: 'white',

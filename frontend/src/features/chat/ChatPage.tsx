@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useParams } from 'react-router-dom';
 import { apiClient } from '../../shared/api/client';
 import { CenteredSpinner } from '../../shared/components/CenteredSpinner';
-
-const bookingId = 1;
-const customerId = 1;
 
 type Message = {
   id: number;
@@ -14,25 +12,33 @@ type Message = {
 };
 
 export const ChatPage: React.FC = () => {
+  const { bookingId } = useParams();
+  const id = Number(bookingId);
   const [message, setMessage] = useState('');
   const queryClient = useQueryClient();
+
   const { data, isLoading } = useQuery({
-    queryKey: ['chat', bookingId],
+    queryKey: ['chat', id],
+    enabled: Number.isFinite(id),
     queryFn: async () => {
-      const response = await apiClient.get<Message[]>(`/api/chat/booking/${bookingId}`);
+      const response = await apiClient.get<Message[]>(`/api/chat/booking/${id}`);
       return response.data;
     }
   });
 
   const { mutate, isPending } = useMutation({
     mutationFn: async () => {
-      await apiClient.post(`/api/chat/booking/${bookingId}`, { senderId: customerId, content: message });
+      await apiClient.post(`/api/chat/booking/${id}`, { content: message });
     },
     onSuccess: () => {
       setMessage('');
-      queryClient.invalidateQueries({ queryKey: ['chat', bookingId] });
+      queryClient.invalidateQueries({ queryKey: ['chat', id] });
     }
   });
+
+  if (!Number.isFinite(id)) {
+    return <div>Please select a booking to view the chat.</div>;
+  }
 
   if (isLoading) {
     return <CenteredSpinner label="Loading chat" />;

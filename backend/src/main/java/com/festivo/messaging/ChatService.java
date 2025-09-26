@@ -24,11 +24,11 @@ public class ChatService {
     return messageRepository.findByBookingIdOrderByCreatedAtAsc(bookingId);
   }
 
-  public Message sendMessage(Long bookingId, Long senderId, String content) {
+  public Message sendMessage(Long bookingId, String senderExternalId, String content) {
     Booking booking = bookingService.get(bookingId);
     User sender =
         userRepository
-            .findById(senderId)
+            .findByExternalId(senderExternalId)
             .orElseThrow(() -> new ResourceNotFoundException("Sender not found"));
     Message message = new Message();
     message.setBooking(booking);

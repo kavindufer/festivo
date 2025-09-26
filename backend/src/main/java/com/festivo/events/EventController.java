@@ -1,9 +1,9 @@
 package com.festivo.events;
 
+import com.festivo.auth.CurrentUser;
 import com.festivo.common.security.Roles;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +28,8 @@ public class EventController {
 
   @PostMapping
   public Event create(@Valid @RequestBody EventRequest request) {
-    return eventService.create(request.customerId(), request.name(), request.description(), request.eventDate());
+    return eventService.create(
+        CurrentUser.subject(), request.name(), request.description(), request.eventDate());
   }
 
   @GetMapping("/{eventId}")
@@ -52,7 +53,6 @@ public class EventController {
   }
 
   public record EventRequest(
-      @NotNull Long customerId,
       @NotBlank String name,
       String description,
       @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate eventDate) {}

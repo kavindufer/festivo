@@ -3,6 +3,8 @@ package com.festivo.events;
 import com.festivo.common.exception.ResourceNotFoundException;
 import com.festivo.users.Customer;
 import com.festivo.users.CustomerRepository;
+import com.festivo.users.User;
+import com.festivo.users.UserRepository;
 import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.List;
@@ -15,11 +17,16 @@ import org.springframework.stereotype.Service;
 public class EventService {
   private final EventRepository eventRepository;
   private final CustomerRepository customerRepository;
+  private final UserRepository userRepository;
 
-  public Event create(Long customerId, String name, String description, LocalDate eventDate) {
+  public Event create(String customerExternalId, String name, String description, LocalDate eventDate) {
+    User user =
+        userRepository
+            .findByExternalId(customerExternalId)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     Customer customer =
         customerRepository
-            .findById(customerId)
+            .findByUserId(user.getId())
             .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
 
     Event event = new Event();

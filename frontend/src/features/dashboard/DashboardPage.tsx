@@ -2,10 +2,29 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
 import { useSearchParams } from 'react-router-dom';
+import {
+  Badge,
+  Box,
+  Heading,
+  SimpleGrid,
+  Stat,
+  StatLabel,
+  StatNumber,
+  Text,
+  VStack,
+  List,
+  ListItem,
+  HStack
+} from '@chakra-ui/react';
 import { apiClient } from '../../shared/api/client';
 import { CenteredSpinner } from '../../shared/components/CenteredSpinner';
 
-const defaultEventId = 1; // Demo seed event
+const defaultEventId = 1;
+
+type DashboardResponse = {
+  upcoming: Array<{ id: number; startTime?: string; start?: string; status: string }>;
+  counts: { totalBookings: number; payments: number };
+};
 
 export const DashboardPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -15,8 +34,8 @@ export const DashboardPage: React.FC = () => {
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['dashboard', eventId],
     queryFn: async () => {
-      const response = await apiClient.get('/api/dashboard', { params: { eventId } });
-      return response.data as { upcoming: Array<any>; counts: { totalBookings: number; payments: number } };
+      const response = await apiClient.get<DashboardResponse>('/api/dashboard', { params: { eventId } });
+      return response.data;
     },
     retry: false
   });
@@ -28,66 +47,70 @@ export const DashboardPage: React.FC = () => {
   if (isError) {
     const message = deriveErrorMessage(error);
     return (
-      <div
-        style={{
-          backgroundColor: 'white',
-          padding: '1.5rem',
-          borderRadius: '1rem',
-          boxShadow: '0 10px 30px rgba(15, 23, 42, 0.08)'
-        }}
-      >
-        <h2 style={{ marginBottom: '0.5rem', fontSize: '1.25rem' }}>Unable to load your dashboard</h2>
-        <p style={{ margin: 0, color: '#64748b' }}>{message}</p>
-      </div>
+      <Box bg="white" p={8} borderRadius="xl" shadow="sm">
+        <Heading size="md" mb={2}>
+          Unable to load your dashboard
+        </Heading>
+        <Text color="gray.600">{message}</Text>
+      </Box>
     );
   }
 
   if (!data) {
     return (
-      <div
-        style={{
-          backgroundColor: 'white',
-          padding: '1.5rem',
-          borderRadius: '1rem',
-          boxShadow: '0 10px 30px rgba(15, 23, 42, 0.08)'
-        }}
-      >
-        <h2 style={{ marginBottom: '0.5rem', fontSize: '1.25rem' }}>Dashboard data unavailable</h2>
-        <p style={{ margin: 0, color: '#64748b' }}>We couldn&apos;t find any dashboard data to display.</p>
-      </div>
+      <Box bg="white" p={8} borderRadius="xl" shadow="sm">
+        <Heading size="md" mb={2}>
+          Dashboard data unavailable
+        </Heading>
+        <Text color="gray.600">We couldn&apos;t find any dashboard data to display.</Text>
+      </Box>
     );
   }
 
   return (
-    <div style={{ display: 'grid', gap: '1.5rem' }}>
-      <section style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '1rem', boxShadow: '0 10px 30px rgba(15, 23, 42, 0.08)' }}>
-        <h2 style={{ marginBottom: '1rem', fontSize: '1.5rem' }}>At a glance</h2>
-        <div style={{ display: 'flex', gap: '1.5rem' }}>
-          <MetricCard title="Total bookings" value={data.counts.totalBookings} />
-          <MetricCard title="Payments" value={data.counts.payments} />
-        </div>
-      </section>
-      <section style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '1rem', boxShadow: '0 10px 30px rgba(15, 23, 42, 0.08)' }}>
-        <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem' }}>Upcoming timeline</h3>
-        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+    <VStack align="stretch" spacing={8}>
+      <Box>
+        <Heading size="lg" mb={2}>
+          Planner overview
+        </Heading>
+        <Text color="gray.600">Track your bookings, payments, and upcoming event milestones.</Text>
+      </Box>
+
+      <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
+        <MetricCard title="Total bookings" value={data.counts.totalBookings.toLocaleString()} />
+        <MetricCard title="Payments" value={data.counts.payments.toLocaleString()} />
+      </SimpleGrid>
+
+      <Box bg="white" borderRadius="xl" shadow="sm" p={6}>
+        <Heading size="md" mb={4}>
+          Upcoming timeline
+        </Heading>
+        <List spacing={4}>
           {data.upcoming.map((booking) => (
-            <li key={booking.id} style={{ padding: '0.75rem 0', borderBottom: '1px solid #e2e8f0' }}>
-              <strong>{new Date(booking.startTime ?? booking.start).toLocaleString()}</strong>
-              <div style={{ color: '#475569' }}>Booking #{booking.id} — {booking.status}</div>
-            </li>
+            <ListItem key={booking.id} borderWidth="1px" borderRadius="lg" p={4}>
+              <HStack justify="space-between">
+                <Box>
+                  <Text fontWeight="semibold">Booking #{booking.id}</Text>
+                  <Text color="gray.600">{new Date(booking.startTime ?? booking.start ?? '').toLocaleString()}</Text>
+                </Box>
+                <Badge colorScheme="purple" textTransform="capitalize">
+                  {booking.status.toLowerCase()}
+                </Badge>
+              </HStack>
+            </ListItem>
           ))}
-          {data.upcoming.length === 0 && <li>No bookings scheduled.</li>}
-        </ul>
-      </section>
-    </div>
+          {data.upcoming.length === 0 && <Text color="gray.500">No bookings scheduled.</Text>}
+        </List>
+      </Box>
+    </VStack>
   );
 };
 
-const MetricCard: React.FC<{ title: string; value: number }> = ({ title, value }) => (
-  <div style={{ flex: 1 }}>
-    <div style={{ fontSize: '0.9rem', color: '#64748b', marginBottom: '0.5rem' }}>{title}</div>
-    <div style={{ fontSize: '2rem', fontWeight: 700 }}>{value}</div>
-  </div>
+const MetricCard: React.FC<{ title: string; value: string | number }> = ({ title, value }) => (
+  <Stat bg="white" borderRadius="xl" shadow="sm" p={6}>
+    <StatLabel color="gray.500">{title}</StatLabel>
+    <StatNumber>{value}</StatNumber>
+  </Stat>
 );
 
 const deriveErrorMessage = (error: unknown) => {

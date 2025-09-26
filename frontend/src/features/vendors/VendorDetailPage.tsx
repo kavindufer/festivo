@@ -24,20 +24,25 @@ export const VendorDetailPage: React.FC = () => {
     enabled: Number.isFinite(id),
     queryFn: async () => {
       try {
-        const [vendorResponse, availabilityResponse, servicesResponse] = await Promise.all([
+        const [vendorResponse, availabilityResponse] = await Promise.all([
           apiClient.get(`/api/vendors/${id}`),
           apiClient.get(`/api/vendors/${id}/calendar`, {
             params: {
               start: new Date().toISOString(),
               end: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString()
             }
-          }),
-          apiClient.get(`/api/vendors/${id}/services`)
+          })
         ]);
+        
+        // The vendor endpoint now returns { vendor, services, reviews, rating }
+        const vendorData = vendorResponse.data;
+        
         return { 
-          vendor: vendorResponse.data, 
-          availability: availabilityResponse.data,
-          services: servicesResponse.data 
+          vendor: vendorData.vendor, 
+          services: vendorData.services,
+          reviews: vendorData.reviews,
+          rating: vendorData.rating,
+          availability: availabilityResponse.data
         };
       } catch (error) {
         console.error('Error fetching vendor details:', error);
@@ -66,7 +71,13 @@ export const VendorDetailPage: React.FC = () => {
     },
     onSuccess: (data) => {
       setShowBookingModal(false);
-      alert('Booking request submitted successfully!');
+      const bookingId = data.id;
+      
+      // Show success message with options
+      if (window.confirm(`Booking request submitted successfully! Booking ID: ${bookingId}\n\nWould you like to go to the chat to discuss details with the vendor?`)) {
+        navigate(`/chat/${bookingId}`);
+      }
+      
       // Reset form
       setBookingForm({
         serviceId: '',
@@ -103,7 +114,13 @@ export const VendorDetailPage: React.FC = () => {
     );
   }
 
-  const { vendor, availability, services } = data as { vendor: any; availability: { events: any[] }; services: any[] };
+  const { vendor, availability, services, reviews, rating } = data as { 
+    vendor: any; 
+    availability: { events: any[] }; 
+    services: any[];
+    reviews: any[];
+    rating: number;
+  };
 
   return (
     <div style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '1rem', boxShadow: '0 10px 30px rgba(15,23,42,0.05)' }}>
@@ -111,7 +128,7 @@ export const VendorDetailPage: React.FC = () => {
       <p style={{ color: '#475569', marginBottom: '1rem' }}>{vendor.description}</p>
       <div style={{ display: 'flex', gap: '2rem', marginBottom: '2rem' }}>
         <span>Location: {vendor.location ?? 'TBD'}</span>
-        <span>Rating: {vendor.rating ?? 'N/A'}</span>
+        <span>Rating: {rating ? `${rating.toFixed(1)}/5` : 'N/A'}</span>
         <span>Verified: {vendor.verified ? 'Yes' : 'Pending'}</span>
       </div>
       <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
@@ -131,7 +148,11 @@ export const VendorDetailPage: React.FC = () => {
           Book Now
         </button>
         <button
-          onClick={() => navigate('/chat')}
+          onClick={() => {
+            // For now, just navigate to chat page - in a real app, you'd create a booking first
+            // or use the vendor's existing booking if one exists
+            alert('To start a chat, please first create a booking with this vendor.');
+          }}
           style={{ 
             backgroundColor: '#3b82f6', 
             color: 'white', 
@@ -161,6 +182,34 @@ export const VendorDetailPage: React.FC = () => {
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {reviews && reviews.length > 0 && (
+        <div style={{ marginBottom: '2rem' }}>
+          <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>Customer Reviews</h2>
+          <div style={{ display: 'grid', gap: '1rem' }}>
+            {reviews.slice(0, 5).map((review: any) => (
+              <div key={review.id} style={{ padding: '1rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem', backgroundColor: '#f8fafc' }}>
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem' }}>
+                  <div style={{ display: 'flex', marginRight: '0.5rem' }}>
+                    {[...Array(5)].map((_, i) => (
+                      <span key={i} style={{ color: i < review.rating ? '#fbbf24' : '#d1d5db' }}>★</span>
+                    ))}
+                  </div>
+                  <span style={{ fontSize: '0.875rem', color: '#64748b' }}>
+                    by {review.customer?.displayName || 'Anonymous'} on {new Date(review.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
+                <p style={{ color: '#374151' }}>{review.comment}</p>
+              </div>
+            ))}
+          </div>
+          {reviews.length > 5 && (
+            <p style={{ color: '#64748b', fontSize: '0.875rem', marginTop: '0.5rem' }}>
+              Showing 5 of {reviews.length} reviews
+            </p>
+          )}
         </div>
       )}
 

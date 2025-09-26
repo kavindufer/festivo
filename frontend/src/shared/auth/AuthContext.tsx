@@ -21,9 +21,37 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
+const DEFAULT_REALM = 'festivo';
+const DEFAULT_BASE_URL = 'http://localhost:8081';
+
 const deriveRealmConfig = () => {
-  const [base, realm] = appConfig.oidcUrl.split('/realms/');
-  return { baseUrl: base, realm: realm ?? 'festivo' };
+  const oidcUrl = appConfig.oidcUrl;
+
+  if (!oidcUrl) {
+    return { baseUrl: DEFAULT_BASE_URL, realm: DEFAULT_REALM };
+  }
+
+  const [base, maybeRealm] = oidcUrl.split('/realms/');
+
+  if (base && maybeRealm) {
+    const realm = maybeRealm.split('/')[0] || DEFAULT_REALM;
+    return { baseUrl: base, realm };
+  }
+
+  try {
+    const url = new URL(oidcUrl);
+    const segments = url.pathname.split('/').filter(Boolean);
+    const realmIndex = segments.findIndex((segment) => segment === 'realms');
+    if (realmIndex >= 0 && segments[realmIndex + 1]) {
+      const realm = segments[realmIndex + 1];
+      const basePath = segments.slice(0, realmIndex).join('/');
+      const baseUrl = basePath ? `${url.origin}/${basePath}` : url.origin;
+      return { baseUrl, realm };
+    }
+    return { baseUrl: url.origin, realm: DEFAULT_REALM };
+  } catch {
+    return { baseUrl: DEFAULT_BASE_URL, realm: DEFAULT_REALM };
+  }
 };
 
 const realmConfig = deriveRealmConfig();
@@ -31,7 +59,7 @@ const realmConfig = deriveRealmConfig();
 const keycloak = new Keycloak({
   url: realmConfig.baseUrl,
   realm: realmConfig.realm,
-  clientId: appConfig.clientId
+  clientId: appConfig.clientId || 'festivo-web'
 });
 
 export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
